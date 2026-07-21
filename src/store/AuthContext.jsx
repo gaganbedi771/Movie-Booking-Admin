@@ -6,6 +6,8 @@ export const AuthContext = createContext({
   isAdmin:false,
   isAuthenticated:false,
   userEmail:"",
+  token:null,
+  logoutHandler: () => {},
   signup: (email, password) => {},
   signin: (email, password) => {},
 });
@@ -68,6 +70,7 @@ const AuthContextProvider = (props) => {
     isAdmin,
     isAuthenticated,
     userEmail,
+    token,
     logoutHandler,
     signup,
     signin
