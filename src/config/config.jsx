@@ -1,0 +1,1 @@
+export const apikey=import.meta.env.VITE_FIREBASE_API_KEY
