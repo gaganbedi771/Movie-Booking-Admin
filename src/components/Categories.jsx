@@ -39,7 +39,7 @@ const Categories = () => {
 
   return (
     <div className="container py-4">
-      {/* Add/Edit Form */}
+      Add/Edit Form
       <div className="card mb-4">
         <div className="card-header">
           <h4 className="mb-0">
@@ -78,7 +78,7 @@ const Categories = () => {
         </div>
       </div>
 
-      {/* Categories List */}
+      Categories List
       <div className="card">
         <div className="card-header">
           <h4 className="mb-0">Categories</h4>

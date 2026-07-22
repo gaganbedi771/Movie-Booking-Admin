@@ -1,30 +1,59 @@
-import { createContext, useState,useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import * as categoriesApi from "../services/categoriesApi";
+import * as moviesApi from "../services/moviesApi";
+import * as showTimesApi from "../services/showTimesApi";
 import { AuthContext } from "../store/AuthContext";
-import { useContext } from "react"; 
+import { useContext } from "react";
 
 export const AppContext = createContext({
+  activeMenu: "categories",
+  changeActiveMenu: () => {},
+  //
   categories: [],
   addCategory: () => {},
   editCategory: () => {},
   deleteCategory: () => {},
-  activeMenu: "categories",
-  changeActiveMenu: () => {},
+  //
+  movies: [],
+  addMovie: () => {},
+  editMovie: () => {},
+  deleteMovie: () => {},
+  //
+  showTimes: [],
+  addShowTime:() => {},
+  editShowTime:() => {},
+  deleteShowTime:() => {},
 });
 
 const AppContextProvider = ({ children }) => {
-  const [activeMenu, setActiveMenu] = useState("categories");
-  const [categories, setCategories] = useState([]);
   const { token } = useContext(AuthContext);
 
+  //   categories
+  const [activeMenu, setActiveMenu] = useState("categories");
+  const [categories, setCategories] = useState([]);
+
+  //   movies
+  const [movies, setMovies] = useState([]);
+
+  //   showTimes
+  const [showTimes, setShowTimes] = useState([]);
+
   useEffect(() => {
-    fetchCategories();
-  }, [token]);
+    if (activeMenu === "categories") {
+      fetchCategories();
+    } else if (activeMenu === "movies") {
+      fetchMovies();
+    }
+    else if (activeMenu === "showtimes") {
+      fetchMovies();
+      fetchShowTimes();
+    }
+  }, [token, activeMenu]);
 
   const changeActiveMenu = (menu) => {
     setActiveMenu(menu);
   };
-
+  // categories
   const fetchCategories = async () => {
     try {
       const data = await categoriesApi.getCategories(token);
@@ -81,6 +110,118 @@ const AppContextProvider = ({ children }) => {
     }
   };
 
+  //   movies
+
+  const fetchMovies = async () => {
+    try {
+      const data = await moviesApi.getMovies(token);
+      console.log("movies fetching");
+      setMovies(data);
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+    }
+  };
+
+  const addMovie = async (movieData) => {
+    try {
+      const response = await moviesApi.addMovie(movieData);
+      setMovies((prevMovies) => [...prevMovies, response]);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to add movie",
+      };
+    }
+  };
+
+  const editMovie = async (id, updatedMovie) => {
+    try {
+      await moviesApi.editMovie(id, updatedMovie);
+      setMovies((prevMovies) =>
+        prevMovies.map((movie) =>
+          movie.id === id ? { ...movie, ...updatedMovie } : movie,
+        ),
+      );
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to edit movie",
+      };
+    }
+  };
+
+  const deleteMovie = async (id) => {
+    try {
+      await moviesApi.deleteMovie(id);
+      setMovies((prevMovies) => prevMovies.filter((movie) => movie.id !== id));
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to delete movie",
+      };
+    }
+  };
+
+  //   showTimes
+
+  const fetchShowTimes = async () => {
+    try {
+      const data = await showTimesApi.getShowTimes(token);
+      console.log("fetching");
+      setShowTimes(data);
+    } catch (error) {
+      console.error("Error fetching show times:", error);
+    }
+  };
+
+  const addShowTime = async (showTimeData) => {
+    try {
+      const response = await showTimesApi.addShowTime(showTimeData);
+      const newShowTime = {
+        id: response.name,
+        ...showTimeData,
+      };
+      setShowTimes((prevShowTimes) => [...prevShowTimes, newShowTime]);
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to add show time",
+      };
+    }
+  };
+
+  const editShowTime = async (id, updatedShowTime) => {
+    try {
+      await showTimesApi.editShowTime(id, updatedShowTime);
+      setShowTimes((prevShowTimes) =>
+        prevShowTimes.map((showTime) =>
+          showTime.id === id ? { ...showTime, ...updatedShowTime } : showTime,
+        ),
+      );
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to edit show time",
+      };
+    }
+  };
+
+  const deleteShowTime = async (id) => {
+    try {
+      await showTimesApi.deleteShowTime(id);
+      setShowTimes((prevShowTimes) =>
+        prevShowTimes.filter((showTime) => showTime.id !== id),
+      );
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.error || "Failed to delete show time",
+      };
+    }
+  };
+
   const contextValue = {
     activeMenu,
     changeActiveMenu,
@@ -88,6 +229,14 @@ const AppContextProvider = ({ children }) => {
     addCategory,
     editCategory,
     deleteCategory,
+    movies,
+    addMovie,
+    editMovie,
+    deleteMovie,
+    showTimes,
+    addShowTime,
+    editShowTime,
+    deleteShowTime,
   };
 
   return (

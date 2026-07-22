@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { dbUrl } from "../config/config";
 
 export const getCategories = async (token) => {
