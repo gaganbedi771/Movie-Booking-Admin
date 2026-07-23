@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from "react";
 import * as categoriesApi from "../services/categoriesApi";
 import * as moviesApi from "../services/moviesApi";
 import * as showTimesApi from "../services/showTimesApi";
+import * as bookingsApi from "../services/bookingsApi";
 import { AuthContext } from "../store/AuthContext";
 import { useContext } from "react";
 
@@ -20,9 +21,12 @@ export const AppContext = createContext({
   deleteMovie: () => {},
   //
   showTimes: [],
-  addShowTime:() => {},
-  editShowTime:() => {},
-  deleteShowTime:() => {},
+  addShowTime: () => {},
+  editShowTime: () => {},
+  deleteShowTime: () => {},
+
+  //
+  bookings: [],
 });
 
 const AppContextProvider = ({ children }) => {
@@ -38,16 +42,14 @@ const AppContextProvider = ({ children }) => {
   //   showTimes
   const [showTimes, setShowTimes] = useState([]);
 
+  //
+  const [bookings, setBookings] = useState([]);
+
   useEffect(() => {
-    if (activeMenu === "categories") {
-      fetchCategories();
-    } else if (activeMenu === "movies") {
-      fetchMovies();
-    }
-    else if (activeMenu === "showtimes") {
-      fetchMovies();
-      fetchShowTimes();
-    }
+    fetchCategories();
+    fetchMovies();
+    fetchShowTimes();
+    fetchBookings();
   }, [token, activeMenu]);
 
   const changeActiveMenu = (menu) => {
@@ -168,7 +170,6 @@ const AppContextProvider = ({ children }) => {
   const fetchShowTimes = async () => {
     try {
       const data = await showTimesApi.getShowTimes(token);
-      console.log("fetching");
       setShowTimes(data);
     } catch (error) {
       console.error("Error fetching show times:", error);
@@ -222,6 +223,29 @@ const AppContextProvider = ({ children }) => {
     }
   };
 
+  //   bookings
+  const fetchBookings = async () => {
+    try {
+      const response = await bookingsApi.getBookings(token);
+      console.log(response);
+      const data = response.map((booking) => {
+        const showTime = showTimes.find((st) => st.id === booking.showTimeId);
+        const movie = movies.find((m) => m.id === showTime?.movieId);
+        return {
+          ...booking,
+          showTime: showTime
+            ? { date: showTime.date, time: showTime.time }
+            : null,
+          movie: movie ? { title: movie.name } : null,
+        };
+      });
+
+      setBookings(data);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    }
+  };
+
   const contextValue = {
     activeMenu,
     changeActiveMenu,
@@ -237,6 +261,7 @@ const AppContextProvider = ({ children }) => {
     addShowTime,
     editShowTime,
     deleteShowTime,
+    bookings,
   };
 
   return (
