@@ -127,7 +127,11 @@ const AppContextProvider = ({ children }) => {
   const addMovie = async (movieData) => {
     try {
       const response = await moviesApi.addMovie(movieData);
-      setMovies((prevMovies) => [...prevMovies, response]);
+      const newMovie = {
+        id: response.name,
+        ...movieData,
+      };
+      setMovies((prevMovies) => [...prevMovies, newMovie]);
       return { success: true };
     } catch (error) {
       return {
